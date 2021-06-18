@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       build:
-        description: 'build-vnc'
+        description: 'build-huginn'
         required: true
         default: '自动部署okteto'
   # 定时触发编译(每天早5点)
@@ -32,6 +32,22 @@ jobs:
     # 运行步骤
     steps:
     
+    - uses: actions/checkout@v1
+    - name: Install build dependencies
+      run: |
+        sudo apt-get -y update
+        sudo apt-get -y upgrade
+        sudo apt-get -y install wget
+        sudo apt-get -y install curl
+    - name: Clone source
+      run: |
+        cd /home/runner
+        wget https://github.com/okteto/okteto/releases/download/1.12.15/okteto-Linux-x86_64
+        chmod +x ./okteto-Linux-x86_64
+        curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl
+        chmod +x ./kubectl
+        sudo mv ./kubectl /usr/local/bin/kubectl
+    
     # 准备完毕
     - name: 准备完毕
       uses: actions/checkout@v2
@@ -44,15 +60,14 @@ jobs:
     - name: "激活命名空间"
       uses: okteto/namespace@master
       with:
-        name: huginn-hzcy
+        name: huginn-hzcy 
         
-    - name: "触发流程"
-      uses: okteto/pipeline@master
+    - name: go kaishi
+      run: |
+        #kubectl 重启pod
+        kubectl get pod -l app=my-huginn -n huginn-hzcy -o yaml | kubectl replace --force -f -
+        kubectl get pod -l app=my-huginn-web -n huginn-hzcy -o yaml | kubectl replace --force -f -
+    - uses: actions/upload-artifact@master
       with:
-        name: okteto-pipeline
-        
-    - name: "上传至okteto"
-      uses: okteto/push@master
-      with:
-        namespace: huginn-hzcy
-        name: huginn
+        name: result
+        path: /usr/local/bin/kubectl
