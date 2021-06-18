@@ -46,11 +46,6 @@ jobs:
       with:
         name: huginn-hzcy
         
-    - name: "销毁流程"
-      uses: okteto/destroy-pipeline@master
-      with:
-        name: okteto-pipeline
-        
     - name: "触发流程"
       uses: okteto/pipeline@master
       with:
