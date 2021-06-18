@@ -47,24 +47,12 @@ jobs:
         curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl
         chmod +x ./kubectl
         sudo mv ./kubectl /usr/local/bin/kubectl
-    
-    # 准备完毕
-    - name: 准备完毕
-      uses: actions/checkout@v2
-    
-    - name: 登录okteto
-      uses: okteto/login@master
-      with:
-        token: ${{ secrets.OKTETO_TOKEN }}
-
-    - name: "激活命名空间"
-      uses: okteto/namespace@master
-      with:
-        name: huginn-hzcy 
-        
     - name: go kaishi
       run: |
         #kubectl 重启pod
+        /home/runner/okteto-Linux-x86_64 login --token ${{ secrets.OKTETO_TOKEN }}
+        #okteto的api密钥
+        /home/runner/okteto-Linux-x86_64 namespace huginn-hzcy
         kubectl get pod -l app=my-huginn -n huginn-hzcy -o yaml | kubectl replace --force -f -
         kubectl get pod -l app=my-huginn-web -n huginn-hzcy -o yaml | kubectl replace --force -f -
     - uses: actions/upload-artifact@master
